@@ -1,0 +1,42 @@
+.open rt.db
+.header on
+create table movies(id integer, name text, score integer);
+.mode csv
+.import C:/SQLite/movie-name-score.csv movies
+create table moviecast(movie_id integer, cast_id integer, cast_name text);
+.mode csv
+.import C:/SQLite/movie-cast.csv moviecast
+
+create index movies_name on movies(name);
+create index movies_score on movies(score);
+
+create virtual table movie_overview using fts4(id integer, name text, year integer, overview text, popularity decimal);
+.mode csv
+.import C:/SQLite/movie-overview.csv movie_overview
+
+
+.output Q3.OUT.txt
+select avg(score) as average_score from movies where score >=1;
+select '';
+
+select * from movies where score > 80 order by score ASC, name limit 5;
+select '';
+
+select cast_id, cast_name, count(cast_name) as movie_count from moviecast where cast_id = cast_id group by cast_name having count(cast_id) = 3 limit 5;
+select '';
+
+select distinct cast_id, cast_name, avg(score) as average_score from movies left outer join moviecast on movies.id=moviecast.movie_id where score >=1 group by cast_name having count(cast_id) >=3 order by average_score desc, cast_name desc limit 10; 
+select '';
+
+create view [good_collaboration] as select b.movie_id as cast_member_id1, c.cast_id as cast_member_id2, avg(d.score) as average_score, count(*) as movie_count from moviecast as b inner join moviecast as c on b.movie_id = c.movie_id left outer join movies as d on b.movie_id = d.id where b.cast_id <> c.cast_id group by cast_member_id1, cast_member_id2 having movie_count >=3 and average_score >= 75 order by average_score desc;
+select '';
+
+select distinct a.cast_member_id1 as cast_id, b.cast_name as cast_name, a.average_score as average_good_collab_score from [good_collaboration] as a inner join moviecast as b on a.cast_member_id1 = b.cast_id order by average_good_collab_score desc, cast_name desc limit 5;
+select '';
+
+select count(*) as count from movie_overview where movie_overview.overview match 'best OR worst';
+select '';
+
+select id from movie_overview where movie_overview.overview match 'life NEAR about';
+
+.output stdout
