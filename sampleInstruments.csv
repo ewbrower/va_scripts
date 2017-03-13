@@ -1,5 +1,5 @@
-id,name,tray
-7,inst2,NULL
-8,inst3,NULL
-9,inst4,NULL
-10,inst5,NULL
+id,name,qty,tray
+7,inst2,1,1
+8,inst3,1,2
+9,inst4,2,3
+10,inst5,1,4

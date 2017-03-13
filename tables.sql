@@ -1,26 +1,23 @@
-CREATE database
-
+-- CREATE database
 
 CREATE TABLE procedures (
 	CPT int NOT NULL,
-	orcc int NOT NULL,
-	surgery char(30)
-	PRIMARY KEY (CPT),
-	PRIMARY KEY (orcc)
+	name char(30),
+	ORCC int NOT NULL,
+	PRIMARY KEY (CPT, ORCC)
 	);
 CREATE TABLE trays (
-	orcc int NOT NULL,
-	tray int NOT NULL,
-	name char(30),
-	instrumentID int,
-	PRIMARY KEY (orcc),
-	PRIMARY KEY (tray)
-	);
+	Tray_id int NOT NULL,
+	tray char(30),
+	ORCC int NOT NULL,
+	T_QTY int NOT NULL,
+	PRIMARY KEY (Tray_id, ORCC));
 CREATE TABLE instruments (
 	id int NOT NULL,
 	instrument char(30),
-	PRIMARY KEY (id)
-	);
+	I_QTY int NOT NULL,
+	Tray_id int,
+	PRIMARY KEY (id, Tray_id));
 
 -- inserts
 
