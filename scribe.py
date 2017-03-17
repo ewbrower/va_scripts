@@ -22,12 +22,13 @@ class SQLDemon(object):
 		print("DATABASE RESET!\n")
 
 	def uploadInstruments(self, filename):
+		# tray name, inst name, inst id, qty
 		orders = []
 		with open(filename, 'r') as csvfile:
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
-				insert = 'INSERT INTO instruments VALUES({}, "{}", {}, {})'.format(row[0], row[1], row[2], row[3])
+				insert = 'INSERT INTO instruments VALUES({}, "{}", {}, "{}")'.format(row[3], row[2], row[4], row[0])
 				# print(insert)
 				orders.append(insert)
 
@@ -42,7 +43,7 @@ class SQLDemon(object):
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
-				insert = 'INSERT INTO trays VALUES ({}, "{}", {}, {})'.format(row[0], row[1], row[2], row[3])
+				insert = 'INSERT INTO trays VALUES ({}, "{}", {}, {})'.format(row[0], row[1].replace("'", '"'), row[2], row[3])
 				print(insert)
 				orders.append(insert)
 
@@ -56,8 +57,7 @@ class SQLDemon(object):
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
-				insert = 'INSERT INTO procedures VALUES ({}, {}, {})'.format(row[0], row[1], row[2])
-				print(insert)
+				insert = 'INSERT INTO procedures VALUES ({}, "{}", {})'.format(row[0], row[2], row[5])
 				orders.append(insert)
 
 		self.execute(orders)
@@ -66,12 +66,18 @@ class SQLDemon(object):
 	def execute(self, commands):
 		with self.connection.cursor() as cursor:
 			for cmd in commands:
+				# print(cmd)
 				res = cursor.execute(cmd)
 
 if __name__ == '__main__':
 	demon = SQLDemon('root', '')
 	demon.resetDB()
-	demon.uploadInstruments("sampleInstruments.csv")
+	# demon.uploadInstruments("sampleInstruments.csv")
+	instData = "/Users/ewbrower/Documents/SeniorDesign/data/pick_tick_translation.csv"
+	demon.uploadInstruments(instData)
+	caseData = "/Users/ewbrower/Documents/SeniorDesign/data/cases.csv"
+	demon.uploadProcedures(caseData)
+
 
 
 
