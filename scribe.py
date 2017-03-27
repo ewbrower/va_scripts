@@ -43,7 +43,7 @@ class SQLDemon(object):
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
-				insert = 'INSERT INTO trays VALUES ({}, "{}", {}, {})'.format(row[0], row[1].replace("'", '"'), row[2], row[3])
+				insert = 'INSERT INTO trays VALUES ({}, "{}", {}, {})'.format(row[3], row[2].replace("'", '"'), row[0], row[4])
 				print(insert)
 				orders.append(insert)
 
@@ -77,6 +77,8 @@ if __name__ == '__main__':
 	demon.uploadInstruments(instData)
 	caseData = "/Users/ewbrower/Documents/SeniorDesign/data/cases.csv"
 	demon.uploadProcedures(caseData)
+	trayData = "/Users/ewbrower/Documents/SeniorDesign/data/trays.csv"
+	demon.uploadTrays(trayData)
 
 
 
