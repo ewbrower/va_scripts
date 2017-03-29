@@ -21,6 +21,14 @@ class SQLDemon(object):
 		self.execute(commands[:-1]) # the last one is a blank command
 		print("DATABASE RESET!\n")
 
+	def getTraysForCart(self, orcc):
+		query = 'select (Tray_id) from trays where (ORCC) like %d' % orcc
+		print(query)
+		resList = self.execute(query)
+		for res in resList:
+			print(res)
+
+
 	def uploadInstruments(self, filename):
 		# tray name, inst name, inst id, qty
 		orders = []
@@ -64,21 +72,28 @@ class SQLDemon(object):
 		print("Procedures uploaded")
 
 	def execute(self, commands):
+		resList = []
 		with self.connection.cursor() as cursor:
-			for cmd in commands:
-				# print(cmd)
-				res = cursor.execute(cmd)
+			if isinstance(commands, str):
+				resList.append(cursor.execute(commands))
+			else:
+				for cmd in commands:
+					resList.append(cursor.execute(cmd))
+		return resList
 
 if __name__ == '__main__':
 	demon = SQLDemon('root', '')
-	demon.resetDB()
-	# demon.uploadInstruments("sampleInstruments.csv")
-	instData = "/Users/ewbrower/Documents/SeniorDesign/data/pick_tick_translation.csv"
-	demon.uploadInstruments(instData)
-	caseData = "/Users/ewbrower/Documents/SeniorDesign/data/cases.csv"
-	demon.uploadProcedures(caseData)
-	trayData = "/Users/ewbrower/Documents/SeniorDesign/data/trays.csv"
-	demon.uploadTrays(trayData)
+
+	# demon.resetDB()
+	# instData = "/Users/ewbrower/Documents/SeniorDesign/data/pick_tick_translation.csv"
+	# demon.uploadInstruments(instData)
+	# caseData = "/Users/ewbrower/Documents/SeniorDesign/data/cases.csv"
+	# demon.uploadProcedures(caseData)
+	# trayData = "/Users/ewbrower/Documents/SeniorDesign/data/trays.csv"
+	# demon.uploadTrays(trayData)
+
+	demon.getTraysForCart(26665)
+
 
 
 
