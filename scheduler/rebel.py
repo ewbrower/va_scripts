@@ -94,15 +94,55 @@ class Thinker(object):
 					allSurgeries.append(item)
 
 		# need a special method to get all trays with no repeats
-		allTrays = self.getTrays(allSurgeries)
+		# this just needs to read from some dictionary created later
+		allTrays = self.getTrayIDs(allSurgeries)
 		for tray in allTrays:
 			dGrid.write(tray)
 			for i, tSlice in enumerate(headers[1:]):
 				dGrid.write(',0')
+				# has to be done here - doesnt matter if there are more used later
 			dGrid.write('\n')
 
+		dGrid.close()
 
-	def getTrays(self, surgeries):
+		print(times)
+
+		reGrid = csv.reader(open(filename))
+
+		# trayNums = {}
+
+		# for i, tSlice in enumerate(reGrid.__next__()[1:]):
+		# 	# print(tSlice)
+		# 	if tSlice in times.keys():
+		# 		# print(times[tSlice])
+		# 		for surgery in times[tSlice]:
+		# 			trayList = self.getTrayCounts(surgery)
+		# 			print(trayList)
+		# 			for trayTuple in trayList:
+		# 				# print(trayTuple)
+		# 				if trayTuple[0] not in trayNums.keys():
+		# 					trayNums[trayTuple[0]] = trayTuple[1]
+		# 				else:
+		# 					trayNums[trayTuple[0]] += trayTuple[1]
+		# print('nums' + str(trayNums))
+
+
+	# def getTrayCounts(self, surgery):
+	# 	with self.connection.cursor() as cursor:
+	# 		query = "SELECT t.Tray_id, t.T_QTY from procedures p INNER JOIN trays t on t.orcc = p.orcc WHERE p.CPT = %s" % surgery
+	# 		# print(query)
+	# 		cursor.execute(query)
+	# 		if cursor.rowcount != 0:
+	# 			output = cursor.fetchall()
+	# 			# print(output)
+	# 			tList = []
+	# 			for tray in output:
+	# 				tList.append((tray['Tray_id'], tray['T_QTY']))
+	# 			print('t' + str(tList))
+	# 			return tList
+	# 	return []
+
+	def getTrayIDs(self, surgeries):
 		tList = []
 		with self.connection.cursor() as cursor:
 			for surgery in surgeries:
