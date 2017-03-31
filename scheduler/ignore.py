@@ -195,7 +195,7 @@ if __name__ == '__main__':
 	while i < 10:
 		sDict = generateSurgeryDictionary('block.csv')
 		tDict = generateTrayDictionary(sDict)
-		makeGrid(tDict, 'final%d.csv'%i)
+		makeGrid(tDict, 'schedules/traySchedule%d.csv'%i)
 		i+=1
 
 
