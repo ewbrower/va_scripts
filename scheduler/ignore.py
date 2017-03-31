@@ -88,7 +88,7 @@ def generateSurgeryDictionary(blockFile):
 	return surgeryDayRooms
 
 def getInitialRow():
-	return ['0']*336
+	return [0]*336
 
 def getTimes():
 	dayList = ['M', 'T', 'W', 'R', 'F', 'S', 'U']
@@ -113,12 +113,13 @@ def getTimes():
 def generateTrayDictionary(surgeryDict):
 	# print(surgeryDict)
 	# print(getTimes())
-	trays = {}
-	convertSurgeryTimes(surgeryDict, 'start', trays)
-	convertSurgeryTimes(surgeryDict, 'end', trays)
-	# print(trays)
+	startTrays = convertSurgeryTimes(surgeryDict, 'start')
+	endTrays = convertSurgeryTimes(surgeryDict, 'end')
+	trays = startTrays
+	trays.update(endTrays)
+	return trays
 
-def convertSurgeryTimes(sDict, key, trays):
+def convertSurgeryTimes(sDict, key):
 	connection = pymysql.connect(host='',
                             user='root',
                             password='',
@@ -127,18 +128,27 @@ def convertSurgeryTimes(sDict, key, trays):
                             cursorclass=pymysql.cursors.DictCursor,
                             autocommit=True)
 	cursor = connection.cursor()
+	trays = {}
+	times = getKeys()
+
 	for timeSlice in sDict[key].keys():
+		tIndex = times.index(timeSlice)
+		# print(timeSlice)
 		surgeries = sDict[key][timeSlice]
-		for sTuple in surgeries:
-			orcc = sTuple[1]
-			# print(timeSlice + "->" + orcc)
-			needed = getTrayCounts(cursor, orcc)
-			if not needed:
-				# print("No trays for ORCC %s"% orcc)
-				pass
-			else:
-				print(timeSlice + " -> " + str(needed))
-		# trays[timeSlice] = 0
+		# print(str(timeSlice) + " " + str(surgeries))
+		for depSurgeTup in surgeries:
+			surgery = depSurgeTup[1]
+			# print(surgery)
+			surgTrays = getTrayCounts(cursor, surgery)
+			if surgTrays:
+				# print(surgTrays)
+				for tray in surgTrays.keys():
+					# print(tray)
+					trayName = str(tray) + '-' + key + ','
+					if trayName not in trays.keys():
+						trays[trayName] = getInitialRow()
+					trays[trayName][tIndex] += surgTrays[tray]
+	return trays
 
 def getTrayCounts(cursor, surgery):
 	query = "SELECT t.Tray_id, t.T_QTY from procedures p INNER JOIN trays t on t.orcc = p.orcc WHERE p.CPT = %s" % surgery
@@ -151,12 +161,42 @@ def getTrayCounts(cursor, surgery):
 		for tray in output:
 			tDict[tray['Tray_id']] = tray['T_QTY']
 		return tDict
-	return []
+	return {}
+
+def makeGrid(trays, filename):
+	grid = open(filename, 'w+')
+	grid.write('type')
+	i = 0
+	time = 0
+	dayList = ['M', 'T', 'W', 'R', 'F', 'S', 'U']
+	day = 0
+	while i < 336:
+		timeSlice = "%s-%04d"%(dayList[day],time)
+		grid.write(',' + timeSlice)
+		if i % 2 == 0:
+			time += 30
+		else:
+			time += 70
+		if time == 2400:
+			time = 0
+			day += 1
+		i+=1
+	grid.write('\n')
+	for tray in trays.keys():
+		grid.write(tray)
+		for x in trays[tray]:
+			grid.write(str(x) + ',')
+		grid.write('\n')
+	grid.close()
 
 if __name__ == '__main__':
-	sDict = generateSurgeryDictionary('block.csv')
-	tDict = generateTrayDictionary(sDict)
-
+	# print(tDict)
+	i = 0
+	while i < 10:
+		sDict = generateSurgeryDictionary('block.csv')
+		tDict = generateTrayDictionary(sDict)
+		makeGrid(tDict, 'final%d.csv'%i)
+		i+=1
 
 
 
