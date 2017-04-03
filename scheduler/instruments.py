@@ -3,6 +3,15 @@ import datetime as dt
 import random
 import pymysql
 
+connection = pymysql.connect(host='',
+                        user='root',
+                        password='',
+                        db='va_inventory',
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor,
+                        autocommit=True)
+cursor = connection.cursor()
+
 def getKeys():
 	i = 0
 	time = 0
@@ -120,14 +129,6 @@ def generateTrayDictionary(surgeryDict):
 	return trays
 
 def convertSurgeryTimes(sDict, key):
-	connection = pymysql.connect(host='',
-                            user='root',
-                            password='',
-                            db='va_inventory',
-                            charset='utf8mb4',
-                            cursorclass=pymysql.cursors.DictCursor,
-                            autocommit=True)
-	cursor = connection.cursor()
 	trays = {}
 	times = getKeys()
 
@@ -139,7 +140,7 @@ def convertSurgeryTimes(sDict, key):
 		for depSurgeTup in surgeries:
 			surgery = depSurgeTup[1]
 			# print(surgery)
-			surgTrays = getTrayCounts(cursor, surgery)
+			surgTrays = getTrayCounts(surgery)
 			if surgTrays:
 				# print(surgTrays)
 				for tray in surgTrays.keys():
@@ -148,9 +149,11 @@ def convertSurgeryTimes(sDict, key):
 					if trayName not in trays.keys():
 						trays[trayName] = getInitialRow()
 					trays[trayName][tIndex] += surgTrays[tray]
+			# else:
+			# 	print(depSurgeTup)
 	return trays
 
-def getTrayCounts(cursor, surgery):
+def getTrayCounts(surgery):
 	query = "SELECT t.Tray_id, t.T_QTY from procedures p INNER JOIN trays t on t.orcc = p.orcc WHERE p.CPT = %s" % surgery
 	# print(query)
 	cursor.execute(query)
@@ -182,30 +185,40 @@ def makeGrid(trays, filename):
 			day += 1
 		i+=1
 	grid.write('\n')
-	for tray in trays.keys():
+	allTrays = getAllTrays()
+	# print(allTrays)
+	# print(trays.keys())
+	# sorted(allTrays)
+	# print(trays)
+	for tray in allTrays:
+		tray = tray + ','
 		grid.write(tray)
-		for x in trays[tray]:
-			grid.write(str(x) + ',')
+		if tray not in trays.keys():
+			# print(tray)
+			initRow = getInitialRow()
+			for x in initRow:
+				grid.write(str(x) + ',')
+		else:
+			for x in trays[tray]:
+				grid.write(str(x) + ',')
 		grid.write('\n')
 	grid.close()
+
+def getAllTrays():
+	query = "SELECT Tray_id from trays"
+	cursor.execute(query)
+	allTrays = []
+	for t in cursor.fetchall():
+		allTrays.append(str(t['Tray_id']) + '-start')
+		allTrays.append(str(t['Tray_id']) + '-end')
+	return allTrays
 
 if __name__ == '__main__':
 	# print(tDict)
 	i = 0
 	while i < 10:
+		print("creating file " + str(i))
 		sDict = generateSurgeryDictionary('block.csv')
 		tDict = generateTrayDictionary(sDict)
-		makeGrid(tDict, 'schedules/traySchedule%d.csv'%i)
+		makeGrid(tDict, 'schedules/sortedTraySchedule%d.csv'%i)
 		i+=1
-
-
-
-
-
-
-
-
-
-
-
-
