@@ -166,6 +166,9 @@ def getTrayCounts(surgery):
 		return tDict
 	return {}
 
+def generateInstrumentDictionary(tDict):
+	return tDict
+
 def makeGrid(trays, filename):
 	grid = open(filename, 'w+')
 	grid.write('type')
@@ -220,5 +223,13 @@ if __name__ == '__main__':
 		print("creating file " + str(i))
 		sDict = generateSurgeryDictionary('block.csv')
 		tDict = generateTrayDictionary(sDict)
-		makeGrid(tDict, 'schedules/sortedTraySchedule%d.csv'%i)
+		iDict = generateTrayDictionary(sDict)
+		makeGrid(tDict, 'instSchedules/sortedInstrumentSchedule%d.csv'%i)
 		i+=1
+
+
+
+
+
+
+
