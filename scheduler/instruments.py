@@ -67,7 +67,7 @@ def addSurgery(start, end, department, count, day):
 def getRandomSurgery(department):
 	# print('getting random %s surgery'%department)
 	# HAD TO ADD IN ORAL MANUALLY -- MUST FIX
-	depReader = csv.reader(open('depCPT.csv'))
+	depReader = csv.reader(open('/Users/ewbrower/git/va_scripts/data/depCPT.csv'))
 	rn = random.random()
 	for row in depReader:
 		if row[0] == department and float(row[4]) > rn:
@@ -216,6 +216,30 @@ def getAllTrays():
 		allTrays.append(str(t['Tray_id']) + '-end')
 	return allTrays
 
+def getInstrumentCounts(trayid):
+	# print(trayid)
+	query = "SELECT id, I_QTY FROM instruments WHERE Tray_id = %s" % trayid
+	# print(query)
+	cursor.execute(query)
+	if cursor.rowcount != 0:
+		output = cursor.fetchall()
+		# print(output)
+		iDict = {}
+		if not output:
+			print(trayid + ' dont have instruments')
+		for inst in output:
+			# print(inst)
+			iDict[inst['id']] = inst['I_QTY']
+		return iDict
+	return {}
+
+def generateInstrumentDictionary(trayDict):
+	for key in trayDict.keys():
+		trayid = key.split('-')[0]
+		inst = getInstrumentCounts(trayid)
+		# print('->' + str(inst))
+		
+
 if __name__ == '__main__':
 	# print(tDict)
 	i = 0
@@ -223,7 +247,7 @@ if __name__ == '__main__':
 		print("creating file " + str(i))
 		sDict = generateSurgeryDictionary('block.csv')
 		tDict = generateTrayDictionary(sDict)
-		iDict = generateTrayDictionary(sDict)
+		iDict = generateInstrumentDictionary(tDict)
 		makeGrid(tDict, 'instSchedules/sortedInstrumentSchedule%d.csv'%i)
 		i+=1
 

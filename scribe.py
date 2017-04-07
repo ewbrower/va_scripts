@@ -19,7 +19,7 @@ class SQLDemon(object):
 			commands = sql.split(';')
 			# commands = [str(c.strip()) + ";" for c in commands]
 		self.execute(commands[:-1]) # the last one is a blank command
-		print("DATABASE RESET!\n")
+		print("DATABASE RESET!")
 
 	def getTraysForCart(self, orcc):
 		query = 'select (Tray_id) from trays where (ORCC) like %d' % orcc
@@ -32,13 +32,15 @@ class SQLDemon(object):
 	def uploadInstruments(self, filename):
 		# tray name, inst name, inst id, qty
 		orders = []
-		with open(filename, 'r') as csvfile:
+		with open(filename, 'r', encoding='ISO-8859-1') as csvfile:
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
-				insert = 'INSERT INTO instruments VALUES({}, "{}", {}, "{}")'.format(row[3], row[2], row[4], row[0])
-				# print(insert)
-				orders.append(insert)
+				if not row[0]:
+					pass
+				else:
+					insert = 'INSERT INTO instruments VALUES("{}", "{}", {}, "{}")'.format(row[3], row[2], row[4], row[0])
+					orders.append(insert)
 
 		self.execute(orders)
 		print("Instruments uploaded")
@@ -47,12 +49,12 @@ class SQLDemon(object):
 		# trayID, trayName, orcc, tray quantity
 		# assume we are receiving a csv of those four things for now - not parse yet
 		orders = []
-		with open(filename, 'r') as csvfile:
+		with open(filename, 'r', encoding='ISO-8859-1') as csvfile:
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
 				insert = 'INSERT INTO trays VALUES ({}, "{}", {}, {})'.format(row[3], row[2].replace("'", '"'), row[0], row[4])
-				print(insert)
+				# print(insert)
 				orders.append(insert)
 
 		self.execute(orders)
@@ -61,11 +63,13 @@ class SQLDemon(object):
 	def uploadProcedures(self, filename):
 		# CPT, name, orcc
 		orders = []
-		with open(filename, 'r') as csvfile:
+		with open(filename, 'r', encoding='ISO-8859-1') as csvfile:
 			reader = csv.reader(csvfile)
 			next(reader) # skip headers
 			for row in reader:
+				# print(row)
 				insert = 'INSERT INTO procedures VALUES ({}, "{}", {})'.format(row[0], row[2], row[5])
+				# print(insert)
 				orders.append(insert)
 
 		self.execute(orders)
@@ -78,21 +82,26 @@ class SQLDemon(object):
 				resList.append(cursor.execute(commands))
 			else:
 				for cmd in commands:
-					resList.append(cursor.execute(cmd))
+					try:
+						resList.append(cursor.execute(cmd))
+					except (pymysql.err.IntegrityError):
+						# print('skipped duplicate entry\n' + cmd + '\n')
+						pass
+					finally:
+						print(cmd)
 		return resList
 
 if __name__ == '__main__':
 	demon = SQLDemon('root', '')
 
-	# demon.resetDB()
-	# instData = "/Users/ewbrower/Documents/SeniorDesign/data/pick_tick_translation.csv"
-	# demon.uploadInstruments(instData)
-	# caseData = "/Users/ewbrower/Documents/SeniorDesign/data/cases.csv"
-	# demon.uploadProcedures(caseData)
-	# trayData = "/Users/ewbrower/Documents/SeniorDesign/data/trays.csv"
-	# demon.uploadTrays(trayData)
+	demon.resetDB()
+	instData = "/Users/ewbrower/git/va_scripts/data/instruments.csv"
+	demon.uploadInstruments(instData)
+	caseData = "/Users/ewbrower/git/va_scripts/data/cases.csv"
+	demon.uploadProcedures(caseData)
+	trayData = "/Users/ewbrower/git/va_scripts/data/trays.csv"
+	demon.uploadTrays(trayData)
 
-	demon.getTraysForCart(26665)
 
 
 
