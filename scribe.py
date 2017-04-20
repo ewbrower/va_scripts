@@ -95,14 +95,13 @@ if __name__ == '__main__':
 	demon = SQLDemon('root', '')
 
 	demon.resetDB()
-	instData = "/Users/ewbrower/git/va_scripts/data/instruments.csv"
+	instData = "data/instruments.csv"
 	demon.uploadInstruments(instData)
 
-	# switch this out to FullSurgery
-	caseData = "/Users/ewbrower/git/va_scripts/data/FullSurgery.csv"
+	caseData = "data/FullSurgery.csv"
 	demon.uploadProcedures(caseData)
 
-	trayData = "/Users/ewbrower/git/va_scripts/data/trays.csv"
+	trayData = "data/trays.csv"
 	demon.uploadTrays(trayData)
 
 

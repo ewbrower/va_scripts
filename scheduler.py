@@ -13,9 +13,8 @@ connection = pymysql.connect(host='',
                         autocommit=True)
 cursor = connection.cursor()
 
-# list of the surgeries that don't have trays
-missing = []
 procedos = []
+missing = []
 
 def getKeys():
 	i = 0
@@ -72,7 +71,7 @@ def addSurgery(start, end, department, count, day):
 def getRandomSurgery(department):
 	# print('getting random %s surgery'%department)
 	# HAD TO ADD IN ORAL MANUALLY -- MUST FIX
-	depReader = csv.reader(open('/Users/ewbrower/git/va_scripts/data/depCPT.csv'))
+	depReader = csv.reader(open('data/depCPT.csv'))
 	rn = random.random()
 	for row in depReader:
 		if row[0] == department and float(row[4]) > rn:
@@ -127,8 +126,6 @@ def getTimes():
 	return times
 
 def generateTrayDictionary(surgeryDict):
-	# print(surgeryDict)
-	# print(getTimes())
 	startTrays = convertSurgeryTimes(surgeryDict, 'start')
 	endTrays = convertSurgeryTimes(surgeryDict, 'end')
 	trays = startTrays
@@ -141,32 +138,23 @@ def convertSurgeryTimes(sDict, key):
 
 	for timeSlice in sDict[key].keys():
 		tIndex = times.index(timeSlice)
-		# print(timeSlice)
 		surgeries = sDict[key][timeSlice]
-		# print(str(timeSlice) + " " + str(surgeries))
 		for depSurgeTup in surgeries:
 			surgery = depSurgeTup[1]
 			surgTrays = getTrayCounts(surgery)
 			if surgTrays:
-				# print(surgTrays)
 				for tray in surgTrays.keys():
-					# print(tray)
 					trayName = str(tray) + '-' + key
 					if trayName not in trays.keys():
 						trays[trayName] = getInitialRow()
 					trays[trayName][tIndex] += surgTrays[tray]
-			# else:
-			# 	print(depSurgeTup)
 	return trays
 
 def getTrayCounts(surgery):
 	query = "SELECT t.Tray_id, t.T_QTY from procedures p INNER JOIN trays t on t.orcc = p.orcc WHERE p.CPT = %s" % surgery
-	# print(query)
 	cursor.execute(query)
-	# print(cursor.fetchall)
 	if cursor.rowcount != 0:
 		output = cursor.fetchall()
-		# print(output)
 		tDict = {}
 		for tray in output:
 			tDict[tray['Tray_id']] = tray['T_QTY']
@@ -179,37 +167,15 @@ def getTrayCounts(surgery):
 
 def makeGrid(trays, filename):
 	grid = open(filename, 'w+')
-	# grid.write('type')
-	# i = 0
-	# time = 0
-	# dayList = ['M', 'T', 'W', 'R', 'F', 'S', 'U']
-	# day = 0
-	# while i < 336:
-	# 	timeSlice = "%s-%04d"%(dayList[day],time)
-	# 	grid.write(',' + timeSlice)
-	# 	if i % 2 == 0:
-	# 		time += 30
-	# 	else:
-	# 		time += 70
-	# 	if time == 2400:
-	# 		time = 0
-	# 		day += 1
-	# 	i+=1
-	# grid.write('\n')
 	allTrays = getBothTrays()
 	starts = allTrays['start']
 	ends = allTrays['end']
-	# print(allTrays)
-	# print(trays.keys())
+
 	# this sorts them by the TRAY ID from smallest to largest
 	starts.sort(key = lambda x: x.split('-')[0])
 	ends.sort(key = lambda x: x.split('-')[0])
-	# print(trays)
 	for tray in starts:
-		# print(tray)
-		# grid.write(tray + ',')
 		if tray not in trays.keys():
-			# print(tray)
 			initRow = getInitialRow()
 			for x in initRow:
 				grid.write(str(x) + ',')
@@ -218,9 +184,7 @@ def makeGrid(trays, filename):
 				grid.write(str(x) + ',')
 	grid.write('\n')
 	for tray in ends:
-		# grid.write(tray + ',')
 		if tray not in trays.keys():
-			# print(tray)
 			initRow = getInitialRow()
 			for x in initRow:
 				grid.write(str(x) + ',')
@@ -251,17 +215,13 @@ def makeNice(trays, filename):
 	allTrays = getBothTrays()
 	starts = allTrays['start']
 	ends = allTrays['end']
-	# print(allTrays)
-	# print(trays.keys())
+
 	# this sorts them by the TRAY ID from smallest to largest
 	starts.sort(key = lambda x: x.split('-')[0])
 	ends.sort(key = lambda x: x.split('-')[0])
-	# print(trays)
 	for tray in starts:
-		# print(tray)
 		grid.write(tray + ',')
 		if tray not in trays.keys():
-			# print(tray)
 			initRow = getInitialRow()
 			for x in initRow:
 				grid.write(str(x) + ',')
@@ -272,7 +232,6 @@ def makeNice(trays, filename):
 	for tray in ends:
 		grid.write(tray + ',')
 		if tray not in trays.keys():
-			# print(tray)
 			initRow = getInitialRow()
 			for x in initRow:
 				grid.write(str(x) + ',')
@@ -302,24 +261,28 @@ def getBothTrays():
 	return {'start': starts, 'end': ends}
 
 def getSample(filename):
-	sDict = generateSurgeryDictionary('block.csv')
+	sDict = generateSurgeryDictionary(filename)
 	tDict = generateTrayDictionary(sDict)
-	makeNice(tDict, filename)
+	makeNice(tDict, 'schedules/sample.csv')
 
 if __name__ == '__main__':
-	# print(tDict)
-	i = 0
-	getSample('samples/sample.csv')
-	while i < 10:
-		print("creating file " + str(i))
-		sDict = generateSurgeryDictionary('block.csv')
-		tDict = generateTrayDictionary(sDict)
-		makeGrid(tDict, 'traySchedules/sortedTraySchedule%02d.csv'%i)
-		i+=1
+	# before doing any of this, you have to create the database
+	# use the scripe.py script
 
-	for miss in sorted(missing):
-		print(miss)
-	# print(sorted(procedos))
+	blockedSchedule = 'data/block.csv'
+
+	# make an example schedule that is human readable
+	getSample(blockedSchedule)
+
+	# make any 'number' of schedules that will be read into the IP
+	number = 10
+	i = 0
+	while i < number:
+		print("creating file " + str(i))
+		sDict = generateSurgeryDictionary(blockedSchedule)
+		tDict = generateTrayDictionary(sDict)
+		makeGrid(tDict, 'schedules/sortedTraySchedule%02d.csv'%i)
+		i+=1
 
 
 
