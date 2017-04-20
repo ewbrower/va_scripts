@@ -68,7 +68,7 @@ class SQLDemon(object):
 			next(reader) # skip headers
 			for row in reader:
 				# print(row)
-				insert = 'INSERT INTO procedures VALUES ({}, "{}", {})'.format(row[0], row[2], row[5])
+				insert = 'INSERT INTO procedures VALUES ({}, "{}", {})'.format(row[1], row[2], row[4])
 				# print(insert)
 				orders.append(insert)
 
@@ -97,8 +97,11 @@ if __name__ == '__main__':
 	demon.resetDB()
 	instData = "/Users/ewbrower/git/va_scripts/data/instruments.csv"
 	demon.uploadInstruments(instData)
-	caseData = "/Users/ewbrower/git/va_scripts/data/cases.csv"
+
+	# switch this out to FullSurgery
+	caseData = "/Users/ewbrower/git/va_scripts/data/FullSurgery.csv"
 	demon.uploadProcedures(caseData)
+
 	trayData = "/Users/ewbrower/git/va_scripts/data/trays.csv"
 	demon.uploadTrays(trayData)
 

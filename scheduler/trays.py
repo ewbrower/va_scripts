@@ -310,7 +310,7 @@ if __name__ == '__main__':
 	# print(tDict)
 	i = 0
 	getSample('samples/sample.csv')
-	while i < 100:
+	while i < 10:
 		print("creating file " + str(i))
 		sDict = generateSurgeryDictionary('block.csv')
 		tDict = generateTrayDictionary(sDict)

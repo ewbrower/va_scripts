@@ -1,4 +1,5 @@
 import pymysql
+from itertools import chain, combinations
 
 connection = pymysql.connect(host='',
                         user='root',
@@ -30,9 +31,57 @@ def getProcedures():
 		proc.append(item['CPT'])
 	return sorted(proc)
 
+def getTrayNames():
+	query = 'select distinct Tray_id, tray from trays'
+	cursor.execute(query)
+	listed = []
+	for tray in cursor.fetchall():
+		# print(tray['tray'])
+		listed.append((tray['Tray_id'], tray['tray']))
+	# print(listed)
+	listed.sort(key = lambda t: t[0])
+	with open('trayDictionary.csv', 'w+') as trandel:
+		for tup in listed:
+			print(tup)
+			trandel.write(str(tup[0]) + ',' + tup[1] + '\n')
+
+def get2TrayOverlap(tup):
+	query = 'select t1.ORCC from trays t1, trays t2 where t1.ORCC = t2.ORCC and t1.Tray_id = %d and t2.Tray_id = %d' %(tup[0], tup[1])
+	print(query)
+	cursor.execute(query)
+	return cursor.fetchall()
+
+
+def getOverlap(interest):
+	xs = list(interest)
+	combi = list(chain.from_iterable(combinations(xs,n) for n in range(len(xs)+1)))
+
+	for item in combi:
+		if len(item) == 2:
+			# print(item)
+			res = get2TrayOverlap(item)
+			for thing in res:
+				print(thing)
+		elif len(item) == 3:
+			pass
 
 if __name__ == '__main__':
-	# orccList = [26123,26615,27447,27880,28290,28810,31287,31536,35301,39402,44160,46999,47562,49505,49505,49650,52356,52601,52632,58555,64721,69703]
 	# surg = getSurgeries(orccList)
 	# print(getCourtsInfo())
-	print(getProcedures())
+	# print(getProcedures())
+	# getTrayNames()
+	major = 26947
+	minor = 27967
+	plastic = 26011
+	trayInterest = [major, minor, plastic]
+	getOverlap(trayInterest)
+
+
+
+
+
+
+
+
+
+
