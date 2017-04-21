@@ -1,7 +1,7 @@
 
-## VAMC Surgical Goods Flow
+# VAMC Surgical Goods Flow
 
-# Populating the Database
+## Populating the Database
 The database is populated with scribe.py
 
 This script requires the following csv tables:
@@ -11,7 +11,7 @@ This script requires the following csv tables:
 
 These are stored in the "data" directory
 
-# Creating Schedules
+## Creating Schedules
 The schedules are created with scheduler.py
 
 This script requires the following information:
@@ -21,7 +21,7 @@ This script requires the following information:
 
 You can increase the number of schedules created by making the "number" variable larger.
 
-# Data Directory
+## Data Directory
 
 FullSurgery.csv
 This csv describes the links between the surgery and the case carts needed to fulfill the surgery.
