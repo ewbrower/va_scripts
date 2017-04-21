@@ -37,3 +37,29 @@ This is a block schedule.
 
 depCPT.csv
 This csv lists the frequency of a surgery given it's department.
+
+## Integer Program
+
+Block Schedule CSV Writer.py
+This code renders a GUI through which a user can create new blocked schedules in the appropriate format.
+
+Fast IP.mos
+This integer program produces inventory minimums while running at the highest rate of tray processing time.
+
+Practical IP.mos
+This integer program produces inventory minimums while running at the most practical rate of tray processing time.
+
+Slow IP.mos
+This integer program produces inventory minimums while running at the observed worst case rate of tray processing time
+
+Fast IP with costs.mos
+Practical IP with costs.mos
+Slow IP with costs.mos
+
+These are versions of the runnable integer programs that have placeholders for tray cost.
+
+
+
+
+
+
